@@ -14,7 +14,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 // Metadata needs to be in a separate variable since we're using 'use client'
 const metadata = {
-  title: "Buzzat - Your Local Marketplace",
+  title: "VStore - Your Local Marketplace",
   description: "Shop from local vendors in your area with fast delivery",
 };
 

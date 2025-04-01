@@ -1,6 +1,6 @@
 {
-  "name": "Buzzat: Quick Delivery Shopping App",
-  "short_name": "Buzzat",
+  "name": "VStore: Quick Delivery Shopping App",
+  "short_name": "VStore",
   "description": "A modern e-commerce application",
   "start_url": "/",
   "display": "standalone",

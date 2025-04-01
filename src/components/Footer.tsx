@@ -24,7 +24,7 @@ export default function Footer() {
           <div className="col-span-1 md:col-span-1">
             <div className="flex items-center mb-4">
               <span className="text-3xl mr-1">🛒</span>
-              <span className="text-2xl font-bold text-blue-400">buzzAt</span>
+              <span className="text-2xl font-bold text-blue-400">VStore</span>
             </div>
             <p className="text-gray-400 mb-4">
               Your one-stop shop for all your daily needs. We deliver quality products right to your doorstep.
@@ -184,7 +184,7 @@ export default function Footer() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-500 text-sm">
-              © {new Date().getFullYear()} buzzAt. All rights reserved.
+              © {new Date().getFullYear()} VStore. All rights reserved.
             </p>
             <p className="text-gray-500 text-sm mt-2 md:mt-0">
               Designed with ❤️ for a better shopping experience

@@ -133,7 +133,7 @@ export default function ProductListWithCategory({ categorySlug, categoryName }: 
   }, []);
 
   const getProductImageUrl = (product: Product): string | null => {
-    const strapiUrl = 'http://localhost:1337'; // Hardcode for testing
+    const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL; // Hardcode for testing
     
     // Handle image as array (from the provided data structure)
     if (Array.isArray(product.image) && product.image.length > 0) {

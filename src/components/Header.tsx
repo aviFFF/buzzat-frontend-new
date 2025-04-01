@@ -328,7 +328,7 @@ export default function Header({
           <Link href="/" className="flex-shrink-0">
             <div className="text-2xl font-bold text-blue-600 flex items-center">
               <span className="text-3xl mr-1">🛒</span>
-              MyStore
+              VStore
             </div>
           </Link>
           
