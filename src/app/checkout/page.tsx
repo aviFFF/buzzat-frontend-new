@@ -131,16 +131,16 @@ export default function CheckoutPage() {
     return null;
   };
 
-  // Then in your component:
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+  
     try {
       // Format cart items for the order
-      const productIds = cartItems.map(item => item.id);
-      
+      const productIds = cartItems.map((item) => item.id);
+  
       console.log('productIds:', productIds);
-      // Create order data object - only include fields that exist in Strapi
+  
+      // Create order data object
       const orderData = {
         name: address.name,
         email: user?.email || '',
@@ -151,41 +151,29 @@ export default function CheckoutPage() {
         totalOrderValue: cartTotals.total,
         userid: user?.id ? Number(user.id) : undefined,
         DeliveryStatus: 'Pending',
-        products: productIds,
-        payment_id: paymentMethod === 'cod' ? 'COD' : 'ONLINE_PENDING',
-        paymentMethod: paymentMethod // Add the missing property
+        products: productIds, // Pass product IDs
+        payment_id: paymentMethod === 'cod' ? 'COD' : undefined, // Include only if valid
+        paymentMethod: paymentMethod,
       };
-      
+  
       console.log('Submitting order with user:', user);
       console.log('Payment method (stored locally):', paymentMethod);
-      
+  
       // Call the API to create the order
       const result = await createOrder(orderData);
-      
+  
       if (result.success) {
-        // If it's a COD order, we can store that information locally
         if (paymentMethod === 'cod') {
-          // Store the order with payment method in localStorage
-          const myOrders = JSON.parse(localStorage.getItem('myOrders') || '[]');
-          myOrders.push({
-            orderId: result.order.id,
-            paymentMethod: 'cod',
-            date: new Date().toISOString(),
-            amount: cartTotals.total
-          });
-          localStorage.setItem('myOrders', JSON.stringify(myOrders));
-          
           toast('Cash on Delivery order placed successfully!');
         } else {
-          // For online payment
           toast('Order placed successfully!');
         }
-        
+  
         // Clear cart
         clearCart();
-        
+  
         // Redirect to order confirmation or home
-        router.push('/');
+        router.push('/my-orders');
       } else {
         throw new Error(result.error);
       }
@@ -194,7 +182,6 @@ export default function CheckoutPage() {
       toast('There was an error placing your order. Please try again.');
     }
   };
-
 
   // Render the component
   if (!isAuthenticated || cartItems.length === 0) {
@@ -386,4 +373,4 @@ export default function CheckoutPage() {
       </div>
     </>
   );
-} 
+}

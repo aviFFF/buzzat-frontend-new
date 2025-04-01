@@ -38,7 +38,7 @@ export default function ProductDetailPage() {
       try {
         setIsLoading(true);
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337'}/api/products?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=*`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'}/api/products?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=*`);
 
         if (!response.ok) {
           throw new Error(`Failed to fetch product: ${response.status}`);
@@ -60,7 +60,7 @@ export default function ProductDetailPage() {
             setIsAddedToCart(true);
           }
 
-          const categoriesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337'}/api/categories?populate=*`);
+          const categoriesResponse = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'}/api/categories?populate=*`);
 
           if (!categoriesResponse.ok) {
             throw new Error(`Failed to fetch categories: ${categoriesResponse.status}`);
@@ -96,7 +96,7 @@ export default function ProductDetailPage() {
       price: product.mrp || 0,
       quantity: cartQuantity || 1,
       image: product.image?.[0]?.url
-        ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337'}${product.image[0].url}`
+        ? `${process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'}${product.image[0].url}`
         : '',
       slug: product.slug || slug
     };
@@ -224,7 +224,7 @@ export default function ProductDetailPage() {
                     <div className="relative h-80 w-full bg-gray-100 rounded-lg overflow-hidden">
                       {product ? (
                         <Image
-                          src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337'}${product.image[0].url}`}
+                          src={`${process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'}${product.image[0].url}`}
                           alt={product?.image?.[0]?.name || 'Product image'}
                           fill
                           className="object-contain"
@@ -304,7 +304,7 @@ export default function ProductDetailPage() {
                       <div className="relative w-16 h-16 bg-gray-100 rounded-lg overflow-hidden"> 
                         {relatedProduct?.image && (
                           <Image
-                            src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337'}${relatedProduct?.image?.url}`}
+                            src={`${process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'}${relatedProduct?.image?.url}`}
                             alt={relatedProduct?.image?.name}
                             layout="fill"
                             className="object-cover"

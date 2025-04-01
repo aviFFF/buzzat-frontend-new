@@ -113,7 +113,7 @@ export default function Header({
   
   // Handle user login
   const handleLogin = (userData: any) => {
-    login(userData);
+    login(userData, userData.token);
     setShowAuthPopup(false);
   };
   
@@ -328,7 +328,7 @@ export default function Header({
           <Link href="/" className="flex-shrink-0">
             <div className="text-2xl font-bold text-blue-600 flex items-center">
               <span className="text-3xl mr-1">🛒</span>
-              buzzAt
+              MyStore
             </div>
           </Link>
           
@@ -443,7 +443,7 @@ export default function Header({
               <Link href="/" className="flex-shrink-0">
                 <div className="text-xl font-bold text-blue-600 flex items-center">
                   <span className="text-2xl mr-1">🛒</span>
-                  buzzAt
+                  My Store
                 </div>
               </Link>
 

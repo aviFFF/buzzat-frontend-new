@@ -1,6 +1,6 @@
 /* eslint-disable import/no-anonymous-default-export */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:1337";
+const API_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://localhost:1337";
 
 // Log the API URL on initialization
 console.log("Using API URL:", API_URL);
@@ -183,106 +183,7 @@ export const fetchVendors = async () => {
   }
 };
 
-// Add this function to your existing api.ts file
-
-/* export const vendorLogin = async (phone: string, password: string) => {
-  try {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:1337";
-
-    console.log("Attempting login with:", {
-      phone,
-      passwordLength: password.length,
-    });
-
-    // Try the dedicated login endpoint first
-    try {
-      const response = await fetch(`${API_URL}/api/vendor-auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          phone,
-          password,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Login response error:", {
-          status: response.status,
-          statusText: response.statusText,
-          body: errorText,
-        });
-
-        // Continue with fallback method
-        throw new Error("API endpoint failed");
-      }
-
-      const data = await response.json();
-      console.log("Login successful, received data:", data);
-
-      return {
-        success: true,
-        jwt: data.jwt,
-        vendor: data.vendor,
-      };
-    } catch (apiError) {
-      console.warn("API endpoint error, trying fallback method:", apiError);
-
-      // Fallback: Use the fetchVendors method
-      const vendorsResponse = await fetchVendors();
-
-      if (
-        !vendorsResponse ||
-        !vendorsResponse.data ||
-        !Array.isArray(vendorsResponse.data)
-      ) {
-        throw new Error("Failed to fetch vendors data");
-      }
-
-      const vendors = vendorsResponse.data;
-      console.log("Fetched vendors:", vendors);
-
-      // Find vendor with matching phone number - UPDATED to match the actual data structure
-      const vendor = vendors.find((v: any) => v && v.phone === phone);
-
-      console.log("Found vendor:", vendor);
-
-      if (!vendor) {
-        throw new Error("No vendor found with this phone number");
-      }
-
-      // In a real app, you would NEVER do this - this is just for demonstration
-      console.warn(
-        "Using simulated login - in production, use a proper authentication API"
-      );
-
-      // Create a simplified vendor data object from the fetched vendor
-      const vendorData = {
-        id: vendor.id,
-        name: vendor.name,
-        phone: vendor.phone,
-        email: vendor.email || "",
-        address: vendor.address || "",
-        pincode: vendor.pincode || "",
-      };
-
-      return {
-        success: true,
-        jwt: "demo-token",
-        vendor: vendorData,
-      };
-    }
-  } catch (error) {
-    console.error("Vendor login error:", error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : "An unknown error occurred",
-    };
-  }
-}; */
+// Vendor login function
 
 export const vendorLogin = async (phone: string, password: string) => {
   try {
@@ -803,6 +704,7 @@ export interface OrderData {
   paymentMethod: string; // Add payment method
   codToken?: string;     // Add COD token
   vendor?: number;
+  payment_id?: string;   // Add payment ID
   products: number[];
 }
 
@@ -844,11 +746,11 @@ const generateCODToken = (): string => {
 export const createOrder = async (orderData: OrderData) => {
   try {
     console.log('Creating order with data:', orderData);
-    
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
-    
+
     // Add authorization header if token is available
     const token = getAuthToken();
     if (token) {
@@ -857,28 +759,14 @@ export const createOrder = async (orderData: OrderData) => {
     } else {
       console.warn('No JWT token available for order creation');
     }
-    
-    // Format the data according to Strapi's structure
-    // The format for relationships depends on your Strapi version
+
+    // Format the `products` field as an array of objects with `id` keys
     const formattedProducts = orderData.products.map((productId) => ({ id: productId }));
 
     console.log('Formatted products:', formattedProducts);
-    const formattedData: {
-      data: {
-        name: string;
-        email: string;
-        phone: string;
-        pincode: string;
-        address: string;
-        totalOrderValue: number;
-        userid?: number;
-        city: string;
-        DeliveryStatus: string;
-        products: { id: number }[];
-        payment_id?: string;
-        vendor?: number;
-      };
-    } = {
+
+    // Prepare the request body
+    const formattedData: any = {
       data: {
         name: orderData.name,
         email: orderData.email,
@@ -889,42 +777,82 @@ export const createOrder = async (orderData: OrderData) => {
         userid: orderData.userid,
         city: orderData.city,
         DeliveryStatus: orderData.DeliveryStatus || 'Pending',
-        // For Strapi v4, use this format for products relationship
-        products: formattedProducts,
-        // Use payment_id instead of paymentMethod
-        // payment_id: orderData.payment_id,
-        vendor: orderData.vendor
-      }
+        products: formattedProducts, // Correctly formatted products
+        payment_id: orderData.payment_id,
+      },
     };
+
+    // Include `payment_id` only if it is valid and expected
+    if (orderData.payment_id) {
+      formattedData.data.payment_id = orderData.payment_id;
+    }
+
     console.log('Sending formatted data to API:', JSON.stringify(formattedData));
-    
+
     const response = await fetch(`${API_URL}/api/orders`, {
       method: 'POST',
       headers,
-      body: JSON.stringify(formattedData)
+      body: JSON.stringify(formattedData),
     });
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Order creation error response:', errorText);
       throw new Error(`Error creating order: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     console.log('Order created successfully:', data);
-    
+
     return {
       success: true,
-      order: data.data
+      order: data.data,
     };
   } catch (error) {
     console.error('Error creating order:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'An unknown error occurred'
+      error: error instanceof Error ? error.message : 'An unknown error occurred',
     };
   }
 };
+
+// Fetch orders by user ID
+export const fetchOrdersByUserId = async (userId: number) => {
+  try {
+    console.log(`Fetching orders for user ID: ${userId}`);
+
+    const token = getAuthToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // Adjust the query to match your Strapi schema
+    const response = await fetch(
+      `${API_URL}/api/orders?filters[userid][$eq]=${userId}&populate=*`,
+      { headers }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Order fetching error response:', errorText);
+      throw new Error(`Error fetching orders: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log(`Fetched ${data.data.length} orders for user ID: ${userId}`);
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    throw error;
+  }
+};
+
+
 
 export default {
   createOrder,
@@ -942,4 +870,5 @@ export default {
   searchProducts,
   getAuthToken,
   generateCODToken,
+  fetchOrdersByUserId,
 };

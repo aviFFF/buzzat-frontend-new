@@ -1,30 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { searchProducts } from '@/services/api';
 import ProductsSection from '@/components/ProductsSection';
 import { usePincode } from '@/context/PincodeContext';
 
-export default function SearchPage() {
+const SearchParamsComponent = ({ onSearchTermChange }: { onSearchTermChange: (term: string) => void }) => {
   const searchParams = useSearchParams();
+  useEffect(() => {
+    const query = searchParams.get('q');
+    if (query) {
+      onSearchTermChange(query);
+    } else {
+      onSearchTermChange('');
+    }
+  }, [searchParams, onSearchTermChange]);
+
+  return null;
+};
+
+export default function SearchPage() {
   const { pincode, isServiceable } = usePincode();
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Get search term from URL query parameters
-  useEffect(() => {
-    const query = searchParams.get('q');
-    if (query) {
-      setSearchTerm(query);
-    } else {
-      // If no query parameter, set empty products array and stop loading
-      setProducts([]);
-      setLoading(false);
-    }
-  }, [searchParams]);
 
   // Fetch products when search term or pincode changes
   useEffect(() => {
@@ -41,9 +42,9 @@ export default function SearchPage() {
 
         // Use the pincode from context if available and serviceable
         const pincodeToUse = isServiceable ? pincode : null;
-        
+
         const response = await searchProducts(searchTerm, pincodeToUse || undefined);
-        
+
         if (response && response.data) {
           setProducts(response.data);
         } else {
@@ -65,6 +66,9 @@ export default function SearchPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <Suspense fallback={<div>Loading...</div>}>
+        <SearchParamsComponent onSearchTermChange={setSearchTerm} />
+      </Suspense>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Search Results</h1>
         {pincode && isServiceable && (
@@ -99,18 +103,18 @@ export default function SearchPage() {
             <ProductsSection products={products} />
           ) : searchTerm ? (
             <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                className="h-16 w-16 mx-auto text-gray-400 mb-4" 
-                fill="none" 
-                viewBox="0 0 24 24" 
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-16 w-16 mx-auto text-gray-400 mb-4"
+                fill="none"
+                viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
               <h3 className="text-lg font-medium text-gray-700 mb-2">No products found</h3>
